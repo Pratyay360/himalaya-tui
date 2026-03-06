@@ -1,0 +1,110 @@
+################################################################################
+###[ Himalaya TUI Configuration ]###############################################
+################################################################################
+
+# Global display name for all accounts.
+#
+display-name = "Example"
+
+# Global signature for all accounts.
+#
+signature = "Regards,\n"
+
+# Signature delimiter.
+#
+signature-delim = "-- \n"
+
+# Downloads directory path.
+#
+downloads-dir = "~/Downloads"
+
+################################################################################
+###[ Account Configuration ]####################################################
+################################################################################
+
+[accounts.example]
+
+# Make this the default account.
+#
+default = true
+
+# Email address for this account.
+#
+email = "example@localhost"
+
+# Display name for this account.
+#
+display-name = "Example"
+
+################################################################################
+###[ IMAP Configuration ]#######################################################
+################################################################################
+
+[accounts.example.imap]
+
+# IMAP server URL.
+# Supported schemes: imap://, imaps://, unix://
+#
+url = "imaps://imap.example.com:993"
+
+# Enable STARTTLS upgrade (only for imap:// scheme).
+#
+#starttls = false
+
+################################################################################
+###[ TLS Configuration ]########################################################
+################################################################################
+
+[accounts.example.imap.tls]
+
+# TLS provider: Rustls or NativeTls
+#
+#provider = "Rustls"
+
+# Rustls crypto backend: Aws or Ring
+#
+#rustls.crypto = "Ring"
+
+# Custom TLS certificate path (optional).
+#
+#cert = "/path/to/cert.pem"
+
+################################################################################
+###[ SASL Authentication ]######################################################
+################################################################################
+
+[accounts.example.imap.sasl]
+
+# Authentication mechanisms to try (in order).
+# Available: Login, Plain, Anonymous
+#
+mechanisms = ["Plain", "Login"]
+
+# PLAIN authentication configuration.
+#
+[accounts.example.imap.sasl.plain]
+#authzid = "optional-authorization-id"
+authcid = "example@localhost"
+
+# Password can be raw (not recommended) or from a command.
+#
+#passwd.raw = "your-password"
+passwd.command = ["pass", "show", "email/example"]
+
+# LOGIN authentication configuration (alternative to PLAIN).
+#
+#[accounts.example.imap.sasl.login]
+#username = "example@localhost"
+#password.raw = "your-password"
+#password.command = ["pass", "show", "email/example"]
+
+################################################################################
+###[ IMAP Extensions ]##########################################################
+################################################################################
+
+[accounts.example.imap.extensions]
+
+# Automatically send ID command after authentication.
+# Some providers require this (e.g., imap.126.com).
+#
+#id.always-after-auth = false
