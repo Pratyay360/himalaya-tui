@@ -10,7 +10,7 @@
 
 ![screenshot](./screenshot.jpeg)
 
-> [!IMPORTANT]
+> [!CAUTION]
 > Himalaya TUI is in active development and currently shipped as `v0.0.1`. Expect breaking changes between releases; the CLI counterpart [pimalaya/himalaya](https://github.com/pimalaya/himalaya) remains the stable interface for production use.
 
 ## Table of contents
@@ -33,8 +33,8 @@
 
 - **Three-pane layout** built on [ratatui](https://ratatui.rs): mailboxes, envelopes, message body or composer
 - **In-app composer** powered by [edtui](https://crates.io/crates/edtui) with system-editor handoff (`Alt-e`)
-- **Color themes**: built-in presets (`default`, `dracula-dark`, `one-light`) plus per-field overrides in the config (see [Theming](#theming))
-- **Provider discovery wizard** shared with [himalaya](https://github.com/pimalaya/himalaya): PACC, Thunderbird Autoconfiguration, RFC 6186 SRV
+- **Color themes**: built-in presets plus per-field overrides in the config (see [Theming](#theming))
+- **Discovery** support: Autoconfiguration (Thunderbird), PACC and RFC 6186 (SRV lookups)
 - **Shared configuration file** with `himalaya`: same `[accounts.<name>]` blocks load on both binaries (see [Configuration](#configuration))
 - **IMAP** support <sup>[rfc9051](https://www.iana.org/go/rfc9051)</sup> (requires `imap` feature)
 - **JMAP** support <sup>[rfc8620](https://www.iana.org/go/rfc8620), [rfc8621](https://www.iana.org/go/rfc8621)</sup> (requires `jmap` feature)
@@ -46,9 +46,9 @@
     - AWS-LC crypto provider (requires `rustls-aws` feature)
     - Ring crypto provider (requires `rustls-ring` feature)
 - **SASL** support: anonymous, login, plain, oauthbearer, xoauth2, scram-sha-256
-- **Discovery** support: Autoconfiguration (Thunderbird), PACC and RFC 6186 (SRV lookups)
 
-*Himalaya TUI is written in [Rust](https://www.rust-lang.org/) and uses [cargo features](https://doc.rust-lang.org/cargo/reference/features.html) to gate backend support. The default feature set is declared in [`Cargo.toml`](./Cargo.toml).*
+> [!TIP]
+> Himalaya TUI is written in [Rust](https://www.rust-lang.org/) and uses [cargo features](https://doc.rust-lang.org/cargo/reference/features.html) to gate backend support. The default feature set is declared in [Cargo.toml](./Cargo.toml).
 
 ## Installation
 
@@ -56,7 +56,7 @@
 
 Himalaya TUI is not yet released, therefore the only way to get a pre-built binary is to check out the [releases](https://github.com/pimalaya/himalaya-tui/actions/workflows/releases.yml) GitHub workflow and look for the *Artifacts* section.
 
-> [!IMPORTANT]
+> [!NOTE]
 > Such binaries are built with the default cargo features. If you need specific features, please use another installation method.
 
 ### Cargo
@@ -105,23 +105,14 @@ A persistent configuration is loaded from the first valid path among:
 - `$HOME/.config/himalaya/config.toml`
 - `$HOME/.himalayarc`
 
-These are the same paths the [`himalaya`](https://github.com/pimalaya/himalaya) CLI looks at: one TOML file backs both binaries, **starting from himalaya CLI v2**. TUI-only fields (`from`, `from-name`, `signature`, `signature-delim`) and CLI-only sections (`table`, `envelope`, `mailbox`, `message`, `attachment`) coexist without errors. See [`config.sample.toml`](./config.sample.toml) for a documented template.
+These are the same paths the [himalaya](https://github.com/pimalaya/himalaya) CLI looks at: one TOML file backs both binaries, **starting from himalaya CLI v2**. TUI-only fields and CLI-only sections coexist without errors. See [config.sample.toml](./config.sample.toml) for a documented template.
 
-> [!NOTE]
-> A himalaya CLI v1 configuration file is **not** compatible with himalaya TUI: the v1 schema differs from the v2 one shared with the TUI. Upgrade the CLI to v2 (or rewrite the file using [`config.sample.toml`](./config.sample.toml)) before pointing the TUI at it.
+> [!WARNING]
+> A himalaya CLI v1 configuration file is **not** compatible with himalaya TUI: the v1 schema differs from the v2 one shared with the TUI. Upgrade the CLI to v2 (or rewrite the file using [config.sample.toml](./config.sample.toml)) before pointing the TUI at it.
 
 Override the path with `-c <PATH>` or `HIMALAYA_CONFIG=<PATH>`; multiple paths can be passed at once, separated by `:`. The first one is the base and the rest are deep-merged on top.
 
 Pass `--no-config` to ignore both, even when a file is present: useful for testing another account in memory without exposing stored credentials.
-
-CLI flags (see `himalaya-tui --help`):
-
-- `[ACCOUNT]`: account name when a config is loaded; otherwise a wizard seed (email, URL or domain)
-- `-c, --config <PATH>`: override the default config file path (env: `HIMALAYA_CONFIG`)
-- `--no-config`: skip on-disk config and run the wizard
-- `--from <EMAIL>`: override the From address used when sending; also prefills the wizard's SASL/JMAP login
-- `--from-name <NAME>`: override the From display name
-- `--keybinds <vim|emacs>`: composer keybinding flavor (overrides the top-level `keybinds` TOML field; defaults to Vim)
 
 ### Theming
 
@@ -137,7 +128,7 @@ bg = "#222"
 mod = ["bold", "italic"]
 ```
 
-Color values accept named ANSI (`"blue"`, `"dark-gray"`, ...), hex (`"#ff8800"`), 256-color indices (`"33"`), or `"reset"` for the terminal default. `mod` is a list of `bold`, `dim`, `italic`, `underlined`, `slow-blink`, `rapid-blink`, `reversed`, `hidden`, `crossed-out`.
+Color values accept named ANSI (`"blue"`, `"dark-gray"`, …), hex (`"#ff8800"`), 256-color indices (`"33"`), or `"reset"` for the terminal default. `mod` is a list of `bold`, `dim`, `italic`, `underlined`, `slow-blink`, `rapid-blink`, `reversed`, `hidden`, `crossed-out`.
 
 Overrides are merged on top of the preset: any field you leave out keeps the preset value, so you can change just one attribute (e.g. only the cursor `fg`) and inherit the rest. Themable elements: `header`, `status-bar`, `border-active`, `border-inactive`, `dialog-border`, `cursor`, `mailbox-current`, `envelope-header`, `envelope-seen`, `envelope-unread`, `message-body`, `compose-text`, `compose-cursor`, `compose-selection`.
 
