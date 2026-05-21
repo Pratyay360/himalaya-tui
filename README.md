@@ -19,6 +19,7 @@
   - [Nix](#nix)
   - [Sources](#sources)
 - [Configuration](#configuration)
+  - [Theming](#theming)
 - [Usage](#usage)
   - [Keybindings](#keybindings)
   - [Composing messages](#composing-messages)
@@ -30,6 +31,7 @@
 
 - **Three-pane layout** built on [ratatui](https://ratatui.rs): mailboxes, envelopes, message body or composer
 - **In-app composer** powered by [edtui](https://crates.io/crates/edtui) with system-editor handoff (`Alt-e`)
+- **Color themes**: built-in presets (`default`, `dracula-dark`, `one-light`) plus per-field overrides in the config (see [Theming](#theming))
 - **Provider discovery wizard** shared with [himalaya](https://github.com/pimalaya/himalaya): PACC, Thunderbird Autoconfiguration, RFC 6186 SRV
 - **Shared configuration file** with `himalaya`: same `[accounts.<name>]` blocks load on both binaries (see [Configuration](#configuration))
 - **IMAP** support <sup>[rfc9051](https://www.iana.org/go/rfc9051)</sup> (requires `imap` feature)
@@ -118,6 +120,26 @@ CLI flags (see `himalaya-tui --help`):
 - `--from <EMAIL>`: override the From address used when sending; also prefills the wizard's SASL/JMAP login
 - `--from-name <NAME>`: override the From display name
 - `--keybinds <vim|emacs>`: composer keybinding flavor (overrides the top-level `keybinds` TOML field; defaults to Vim)
+
+### Theming
+
+The TUI uses named ANSI colors by default, so the rendering inherits the colors of your terminal palette. Pick a preset and/or override individual fields in the `[theme]` block of your config (full reference in [config.sample.toml](./config.sample.toml)):
+
+```toml
+[theme]
+preset = "dracula-dark"
+
+[theme.cursor]
+fg = "magenta"
+bg = "#222"
+mod = ["bold", "italic"]
+```
+
+Color values accept named ANSI (`"blue"`, `"dark-gray"`, ...), hex (`"#ff8800"`), 256-color indices (`"33"`), or `"reset"` for the terminal default. `mod` is a list of `bold`, `dim`, `italic`, `underlined`, `slow-blink`, `rapid-blink`, `reversed`, `hidden`, `crossed-out`.
+
+Overrides are merged on top of the preset: any field you leave out keeps the preset value, so you can change just one attribute (e.g. only the cursor `fg`) and inherit the rest. Themable elements: `header`, `status-bar`, `border-active`, `border-inactive`, `dialog-border`, `cursor`, `mailbox-current`, `envelope-header`, `envelope-seen`, `envelope-unread`, `message-body`, `compose-text`, `compose-cursor`, `compose-selection`.
+
+Presets live as plain Rust files under [src/themes](./src/themes/) and are shipped with the binary; pull requests adding new presets are welcome (see [CONTRIBUTING.md](./CONTRIBUTING.md)).
 
 ## Usage
 

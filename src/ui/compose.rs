@@ -19,7 +19,6 @@ use edtui::{EditorTheme, EditorView};
 use ratatui::{
     Frame,
     layout::Rect,
-    style::{Color, Style},
     widgets::{Block, Borders, Widget},
 };
 
@@ -36,15 +35,14 @@ pub fn render_compose(frame: &mut Frame, app: &mut App, area: Rect) {
     let inner = block.inner(area);
     frame.render_widget(block, area);
 
-    // Create a theme that matches the TUI styling
-    let theme = EditorTheme::default()
-        .base(Style::default().bg(Color::Reset).fg(Color::White))
-        .cursor_style(Style::default().bg(Color::White).fg(Color::Black))
-        .selection_style(Style::default().bg(Color::Cyan).fg(Color::Black))
+    let editor_theme = EditorTheme::default()
+        .base(app.theme.compose_text)
+        .cursor_style(app.theme.compose_cursor)
+        .selection_style(app.theme.compose_selection)
         .hide_status_line();
 
     let buf = frame.buffer_mut();
     EditorView::new(&mut app.editor_state)
-        .theme(theme)
+        .theme(editor_theme)
         .render(inner, buf);
 }

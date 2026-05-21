@@ -137,19 +137,27 @@ fn load_then_connect(
         Config::from_paths_or_default(config_paths)?
     };
 
-    let (name, mut account_config, display_name, signature, keybinds_config) = match loaded {
+    let (name, mut account_config, display_name, signature, keybinds_config, theme) = match loaded {
         Some(mut config) => {
             let display = config.display_name.take();
             let sig = config.signature.take().unwrap_or_default();
             let keybinds = config.keybinds;
+            let theme = himalaya_tui::theme::Theme::resolve(&config.theme);
             let (name, account) = config
                 .take_account(account_or_seed)?
                 .ok_or_else(|| anyhow!("Account not found"))?;
-            (name, account, display, sig, keybinds)
+            (name, account, display, sig, keybinds, theme)
         }
         None => {
             let account = run_wizard(account_or_seed, from)?;
-            ("default".to_string(), account, None, String::new(), None)
+            (
+                "default".to_string(),
+                account,
+                None,
+                String::new(),
+                None,
+                himalaya_tui::theme::Theme::default(),
+            )
         }
     };
 
@@ -163,7 +171,15 @@ fn load_then_connect(
 
     let client = build_client(account_config)?;
 
-    let app = App::new(name, from, from_name, signature, smtp_config, keybinds);
+    let app = App::new(
+        name,
+        from,
+        from_name,
+        signature,
+        smtp_config,
+        keybinds,
+        theme,
+    );
     Ok((app, client))
 }
 

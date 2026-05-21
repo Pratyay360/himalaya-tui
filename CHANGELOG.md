@@ -15,3 +15,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Provider discovery wizard: PACC, Thunderbird Autoconfiguration (ISP, ISP-fallback, ISPDB), RFC 6186 SRV.
 - Backend support: IMAP, JMAP, Maildir, SMTP (via [io-email](https://github.com/pimalaya/io-email) and the matching `io-*` crates).
 - SASL mechanisms: anonymous, login, plain, oauthbearer, xoauth2, scram-sha-256.
+- Color themes: built-in presets (`default`, `dracula-dark`, `one-light`) plus per-field `[theme.*]` overrides in the TOML config (`fg`, `bg`, `mod`).
+- `himalaya-tui completions <shell>` and `himalaya-tui manuals <dir>` auxiliary subcommands.

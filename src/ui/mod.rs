@@ -27,12 +27,15 @@ mod message;
 use ratatui::{
     Frame,
     layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
+    style::Style,
     text::{Line, Span},
     widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
 };
 
-use crate::app::{App, BottomPanelMode, ComposeAction, Dialog, EnvelopeAction, FlagAction, Panel};
+use crate::{
+    app::{App, BottomPanelMode, ComposeAction, Dialog, EnvelopeAction, FlagAction, Panel},
+    theme::Theme,
+};
 
 pub use compose::render_compose;
 pub use envelopes::render_envelopes;
@@ -54,35 +57,40 @@ pub fn render(frame: &mut Frame, app: &mut App) {
     render_status_bar(frame, app, chunks[2]);
 
     // Render dialog overlay if needed
+    let theme = app.theme;
     match app.dialog {
         Some(Dialog::Envelope) => render_dialog(
             frame,
+            &theme,
             app.dialog_index,
             " Actions ",
             &EnvelopeAction::ALL.map(|a| a.label()),
         ),
         Some(Dialog::Compose) => render_dialog(
             frame,
+            &theme,
             app.dialog_index,
             " Compose ",
             &ComposeAction::ALL.map(|a| a.label()),
         ),
         Some(Dialog::CopyTo) => {
             let labels: Vec<&str> = app.mailboxes.iter().map(|m| m.name.as_str()).collect();
-            render_dialog(frame, app.dialog_index, " Copy to ", &labels);
+            render_dialog(frame, &theme, app.dialog_index, " Copy to ", &labels);
         }
         Some(Dialog::MoveTo) => {
             let labels: Vec<&str> = app.mailboxes.iter().map(|m| m.name.as_str()).collect();
-            render_dialog(frame, app.dialog_index, " Move to ", &labels);
+            render_dialog(frame, &theme, app.dialog_index, " Move to ", &labels);
         }
         Some(Dialog::FlagAdd) => render_dialog(
             frame,
+            &theme,
             app.dialog_index,
             " Add Flag ",
             &FlagAction::ALL.map(|a| a.label()),
         ),
         Some(Dialog::FlagRemove) => render_dialog(
             frame,
+            &theme,
             app.dialog_index,
             " Remove Flag ",
             &FlagAction::ALL.map(|a| a.label()),
@@ -93,12 +101,7 @@ pub fn render(frame: &mut Frame, app: &mut App) {
 
 fn render_header(frame: &mut Frame, app: &App, area: Rect) {
     let title = format!(" Himalaya TUI — {} ", app.account_name);
-    let header = Paragraph::new(title).style(
-        Style::default()
-            .bg(Color::Blue)
-            .fg(Color::White)
-            .add_modifier(Modifier::BOLD),
-    );
+    let header = Paragraph::new(title).style(app.theme.header);
     frame.render_widget(header, area);
 }
 
@@ -152,12 +155,17 @@ fn render_status_bar(frame: &mut Frame, app: &App, area: Rect) {
         )
     };
 
-    let status_bar =
-        Paragraph::new(status).style(Style::default().bg(Color::DarkGray).fg(Color::White));
+    let status_bar = Paragraph::new(status).style(app.theme.status_bar);
     frame.render_widget(status_bar, area);
 }
 
-fn render_dialog(frame: &mut Frame, selected_index: usize, title: &str, labels: &[&str]) {
+fn render_dialog(
+    frame: &mut Frame,
+    theme: &Theme,
+    selected_index: usize,
+    title: &str,
+    labels: &[&str],
+) {
     let height = (labels.len() as u16 + 2).min(20);
     let area = centered_rect_fixed_height(40, height, frame.area());
 
@@ -166,7 +174,7 @@ fn render_dialog(frame: &mut Frame, selected_index: usize, title: &str, labels: 
     let block = Block::default()
         .title(title)
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::Yellow));
+        .border_style(theme.dialog_border);
 
     let inner = block.inner(area);
     frame.render_widget(block, area);
@@ -176,12 +184,9 @@ fn render_dialog(frame: &mut Frame, selected_index: usize, title: &str, labels: 
         .enumerate()
         .map(|(i, label)| {
             let style = if i == selected_index {
-                Style::default()
-                    .bg(Color::Cyan)
-                    .fg(Color::White)
-                    .add_modifier(Modifier::BOLD)
+                theme.cursor
             } else {
-                Style::default().fg(Color::White)
+                theme.message_body
             };
 
             let prefix = if i == selected_index { "> " } else { "  " };
@@ -219,8 +224,8 @@ fn centered_rect_fixed_height(percent_x: u16, height: u16, r: Rect) -> Rect {
 
 pub fn get_border_style(app: &App, panel: Panel) -> Style {
     if app.active_panel == panel {
-        Style::default().fg(Color::Cyan)
+        app.theme.border_active
     } else {
-        Style::default().fg(Color::Gray)
+        app.theme.border_inactive
     }
 }

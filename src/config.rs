@@ -38,11 +38,12 @@ use pimalaya_stream::{
     },
     tls::{Rustls, RustlsCrypto, Tls, TlsProvider},
 };
+use ratatui::style::{Color, Modifier, Style};
 use serde::{Deserialize, Serialize};
 #[cfg(any(feature = "imap", feature = "smtp", feature = "jmap"))]
 use url::Url;
 
-use crate::app::Keybinds;
+use crate::{app::Keybinds, theme::Theme, themes};
 
 /// `deny_unknown_fields` is intentionally omitted so the same TOML
 /// file can be shared with the `himalaya` CLI: top-level CLI-only
@@ -51,7 +52,7 @@ use crate::app::Keybinds;
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub struct Config {
-    #[serde(alias = "name")]
+    #[serde(alias = "from-name")]
     pub display_name: Option<String>,
     pub signature: Option<String>,
     pub signature_delim: Option<String>,
@@ -59,7 +60,134 @@ pub struct Config {
     /// Composer keybinding flavor (Vim or Emacs). The CLI `--keybinds`
     /// flag overrides this; both default to Vim when omitted.
     pub keybinds: Option<Keybinds>,
+    /// Color theme: pick a preset (`dracula`, `one-dark`, ...) and/or
+    /// override individual fields. Resolved into a [`Theme`] at
+    /// startup.
+    #[serde(default)]
+    pub theme: ThemeConfig,
     pub accounts: HashMap<String, AccountConfig>,
+}
+
+/// User-supplied theme configuration: pick a preset and/or override
+/// individual fields. Each override is merged on top of the preset
+/// via [`Style::patch`], so users can change just one attribute
+/// (e.g. only `fg`) and inherit the rest from the preset.
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ThemeConfig {
+    /// Preset theme name. Each variant maps to one file under
+    /// `src/themes/`.
+    pub preset: Option<PresetConfig>,
+    pub header: Option<StyleConfig>,
+    pub status_bar: Option<StyleConfig>,
+    pub border_active: Option<StyleConfig>,
+    pub border_inactive: Option<StyleConfig>,
+    pub dialog_border: Option<StyleConfig>,
+    pub cursor: Option<StyleConfig>,
+    pub mailbox_current: Option<StyleConfig>,
+    pub envelope_header: Option<StyleConfig>,
+    pub envelope_seen: Option<StyleConfig>,
+    pub envelope_unread: Option<StyleConfig>,
+    pub message_body: Option<StyleConfig>,
+    pub compose_text: Option<StyleConfig>,
+    pub compose_cursor: Option<StyleConfig>,
+    pub compose_selection: Option<StyleConfig>,
+}
+
+/// Names of presets shipped with the binary. Contributors add a
+/// preset by dropping a new file under `src/themes/`, registering it
+/// in `src/themes/mod.rs`, and adding a variant + match arm here.
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum PresetConfig {
+    Default,
+    DraculaDark,
+    OneLight,
+}
+
+impl PresetConfig {
+    pub const fn theme(self) -> Theme {
+        match self {
+            PresetConfig::Default => themes::default::THEME,
+            PresetConfig::DraculaDark => themes::dracula_dark::THEME,
+            PresetConfig::OneLight => themes::one_light::THEME,
+        }
+    }
+}
+
+/// Config-side mirror of ratatui's [`Style`]. Field names follow the rest of
+/// the config (kebab-case); `mod` is a list of [`ModifierConfig`] variants
+/// (`["bold", "italic"]`).
+///
+/// Example:
+///
+/// ```toml
+/// [theme.cursor]
+/// fg = "magenta"
+/// bg = "#222"
+/// mod = ["bold", "italic"]
+/// ```
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct StyleConfig {
+    pub fg: Option<Color>,
+    pub bg: Option<Color>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub r#mod: Vec<ModifierConfig>,
+}
+
+impl From<&StyleConfig> for Style {
+    fn from(c: &StyleConfig) -> Self {
+        let mut s = Style::new();
+
+        if let Some(fg) = c.fg {
+            s = s.fg(fg);
+        }
+
+        if let Some(bg) = c.bg {
+            s = s.bg(bg);
+        }
+
+        let m = c
+            .r#mod
+            .iter()
+            .copied()
+            .fold(Modifier::empty(), |acc, m| acc | Modifier::from(m));
+
+        s.add_modifier(m)
+    }
+}
+
+/// Kebab-case mirror of ratatui's [`Modifier`] for user config. Each
+/// variant maps 1:1 to a `Modifier::*` flag via [`From`].
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ModifierConfig {
+    Bold,
+    Dim,
+    Italic,
+    Underlined,
+    SlowBlink,
+    RapidBlink,
+    Reversed,
+    Hidden,
+    CrossedOut,
+}
+
+impl From<ModifierConfig> for Modifier {
+    fn from(m: ModifierConfig) -> Self {
+        match m {
+            ModifierConfig::Bold => Modifier::BOLD,
+            ModifierConfig::Dim => Modifier::DIM,
+            ModifierConfig::Italic => Modifier::ITALIC,
+            ModifierConfig::Underlined => Modifier::UNDERLINED,
+            ModifierConfig::SlowBlink => Modifier::SLOW_BLINK,
+            ModifierConfig::RapidBlink => Modifier::RAPID_BLINK,
+            ModifierConfig::Reversed => Modifier::REVERSED,
+            ModifierConfig::Hidden => Modifier::HIDDEN,
+            ModifierConfig::CrossedOut => Modifier::CROSSED_OUT,
+        }
+    }
 }
 
 impl Config {
@@ -101,6 +229,7 @@ impl TomlConfig for Config {
             .accounts
             .iter()
             .find_map(|(name, account)| account.default.then(|| name.clone()))?;
+
         self.take_named_account(&name)
     }
 }

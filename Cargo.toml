@@ -49,7 +49,7 @@ mml = "1"
 pimalaya-cli = { version = "0.0.1", default-features = false, features = ["prompt", "wizard", "spinner", "terminal"] }
 pimalaya-config = { version = "0.0.1", default-features = false, features = ["toml", "secret"] }
 pimalaya-stream = { version = "0.0.1", default-features = false, features = ["std"] }
-ratatui = "0.30"
+ratatui = { version = "0.30", features = ["serde"] }
 rfc2047-decoder = "1"
 secrecy = "0.10"
 serde = { version = "1", features = ["derive"] }

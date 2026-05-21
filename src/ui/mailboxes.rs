@@ -18,7 +18,7 @@
 use ratatui::{
     Frame,
     layout::Rect,
-    style::{Color, Modifier, Style},
+    style::Style,
     text::{Line, Span},
     widgets::{Block, Borders, List, ListItem, ListState},
 };
@@ -32,9 +32,7 @@ pub fn render_mailboxes(frame: &mut Frame, app: &mut App, area: Rect) {
         .iter()
         .map(|mailbox| {
             let style = if Some(&mailbox.id) == app.selected_mailbox.as_ref() {
-                Style::default()
-                    .fg(Color::Yellow)
-                    .add_modifier(Modifier::BOLD)
+                app.theme.mailbox_current
             } else {
                 Style::default()
             };
@@ -48,12 +46,9 @@ pub fn render_mailboxes(frame: &mut Frame, app: &mut App, area: Rect) {
         .borders(Borders::ALL)
         .border_style(get_border_style(app, Panel::Mailboxes));
 
-    let list = List::new(items).block(block).highlight_style(
-        Style::default()
-            .bg(Color::Cyan)
-            .fg(Color::White)
-            .add_modifier(Modifier::BOLD),
-    );
+    let list = List::new(items)
+        .block(block)
+        .highlight_style(app.theme.cursor);
 
     // Page-style scrolling: when the cursor leaves the visible
     // window, snap the offset so the new selection sits at the page

@@ -18,7 +18,6 @@
 use ratatui::{
     Frame,
     layout::Rect,
-    style::{Color, Style},
     text::{Line, Text},
     widgets::{Block, Borders, Paragraph, Scrollbar, ScrollbarOrientation, ScrollbarState},
 };
@@ -48,7 +47,7 @@ pub fn render_message(frame: &mut Frame, app: &App, area: Rect) {
     let paragraph = Paragraph::new(Text::from(lines))
         .block(block)
         .scroll((scroll, 0))
-        .style(Style::default().fg(Color::White));
+        .style(app.theme.message_body);
 
     frame.render_widget(paragraph, area);
 

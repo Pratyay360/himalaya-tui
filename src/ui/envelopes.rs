@@ -19,7 +19,6 @@ use io_email::{envelope::Envelope, flag::Flag};
 use ratatui::{
     Frame,
     layout::{Constraint, Rect},
-    style::{Color, Modifier, Style},
     widgets::{Block, Borders, Cell, Row, Table, TableState},
 };
 
@@ -27,11 +26,9 @@ use super::get_border_style;
 use crate::app::{App, Panel};
 
 pub fn render_envelopes(frame: &mut Frame, app: &mut App, area: Rect) {
-    let header_cells = ["Flags", "Subject", "From", "Date"]
-        .iter()
-        .map(|h| Cell::from(*h).style(Style::default().add_modifier(Modifier::BOLD)));
+    let header_cells = ["Flags", "Subject", "From", "Date"].map(Cell::from);
     let header = Row::new(header_cells)
-        .style(Style::default().fg(Color::Yellow))
+        .style(app.theme.envelope_header)
         .height(1);
 
     let rows: Vec<Row> = app
@@ -39,9 +36,9 @@ pub fn render_envelopes(frame: &mut Frame, app: &mut App, area: Rect) {
         .iter()
         .map(|envelope| {
             let style = if envelope.flags.contains(&Flag::Seen) {
-                Style::default().fg(Color::Gray)
+                app.theme.envelope_seen
             } else {
-                Style::default().add_modifier(Modifier::BOLD)
+                app.theme.envelope_unread
             };
 
             let cells = vec![
@@ -82,12 +79,7 @@ pub fn render_envelopes(frame: &mut Frame, app: &mut App, area: Rect) {
     let table = Table::new(rows, widths)
         .header(header)
         .block(block)
-        .row_highlight_style(
-            Style::default()
-                .bg(Color::Cyan)
-                .fg(Color::White)
-                .add_modifier(Modifier::BOLD),
-        );
+        .row_highlight_style(app.theme.cursor);
 
     // Page-style scrolling: when the cursor leaves the visible
     // window, snap the offset so the new selection sits at the page

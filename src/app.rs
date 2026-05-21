@@ -30,7 +30,7 @@ use mml::template::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::config::SmtpConfig;
+use crate::{config::SmtpConfig, theme::Theme};
 
 /// Keybinding flavor applied to the in-app composer.
 ///
@@ -204,6 +204,7 @@ pub struct App {
     /// fire. The composer still defaults to edtui's Vim handler so
     /// typing works the same way.
     pub keybinds: Option<Keybinds>,
+    pub theme: Theme,
 }
 
 impl Default for App {
@@ -236,6 +237,7 @@ impl Default for App {
             dialog: None,
             dialog_index: 0,
             keybinds: None,
+            theme: Theme::default(),
         }
     }
 }
@@ -248,6 +250,7 @@ impl App {
         signature: String,
         smtp_config: Option<SmtpConfig>,
         keybinds: Option<Keybinds>,
+        theme: Theme,
     ) -> Self {
         // edtui can only be Vim or Emacs, so map the absent case to
         // its default (Vim) for the composer.
@@ -260,6 +263,7 @@ impl App {
             smtp_config,
             editor_handler,
             keybinds,
+            theme,
             status_message: Some("Loading mailboxes...".into()),
             ..Self::default()
         }

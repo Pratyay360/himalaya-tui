@@ -46,6 +46,99 @@
 #keybinds = "vim"
 
 # --------------------------------------------------------------------------------
+# Theme
+# --------------------------------------------------------------------------------
+#
+# Color theme for the TUI. By default the binary uses named ANSI colors so the
+# rendering inherits the terminal palette. Pick a preset and/or override
+# individual fields below.
+#
+# Color values accept anything ratatui understands:
+#   - named ANSI: "black", "red", ..., "white", "dark-gray", "light-red", ...
+#   - hex RGB:    "#ff8800"
+#   - 256-color:  "33" (xterm-256 palette index)
+#   - "reset":    terminal default
+#
+# `mod` is a list of modifiers among:
+#   bold, dim, italic, underlined, slow-blink, rapid-blink, reversed, hidden,
+#   crossed-out
+
+#[theme]
+
+# Preset theme: `default` (named ANSI), `dracula-dark`, `one-light`. Omit to
+# start from the built-in default; overrides below are layered on top.
+#preset = "dracula-dark"
+
+# Each `[theme.*]` table overrides one UI element. Any field left out keeps
+# the value from the preset (or the built-in default). Examples below cover
+# every themable element with its built-in default value.
+
+# Top header bar (account name).
+#[theme.header]
+#bg = "blue"
+#fg = "white"
+#mod = ["bold"]
+
+# Bottom status bar.
+#[theme.status-bar]
+#bg = "dark-gray"
+#fg = "white"
+
+# Border of the currently-focused panel.
+#[theme.border-active]
+#fg = "cyan"
+
+# Border of inactive panels.
+#[theme.border-inactive]
+#fg = "gray"
+
+# Border of modal dialogs (Actions, Copy/Move To, Add/Remove Flag, ...).
+#[theme.dialog-border]
+#fg = "yellow"
+
+# Selected row / dialog item ("cursor").
+#[theme.cursor]
+#bg = "cyan"
+#fg = "white"
+#mod = ["bold"]
+
+# Marker on the currently-open mailbox in the mailbox list.
+#[theme.mailbox-current]
+#fg = "yellow"
+#mod = ["bold"]
+
+# Envelope table column header row.
+#[theme.envelope-header]
+#fg = "yellow"
+#mod = ["bold"]
+
+# Envelopes flagged as Seen (read messages).
+#[theme.envelope-seen]
+#fg = "gray"
+
+# Envelopes without the Seen flag (unread messages).
+#[theme.envelope-unread]
+#mod = ["bold"]
+
+# Message reader body text.
+#[theme.message-body]
+#fg = "white"
+
+# Composer body text.
+#[theme.compose-text]
+#fg = "white"
+
+# Composer cursor cell.
+#[theme.compose-cursor]
+#bg = "white"
+#fg = "black"
+
+# Composer visual-mode selection.
+#[theme.compose-selection]
+#bg = "cyan"
+#fg = "black"
+
+# --------------------------------------------------------------------------------
 # Account config
 # --------------------------------------------------------------------------------
 
