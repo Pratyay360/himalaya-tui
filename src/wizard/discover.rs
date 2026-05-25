@@ -125,9 +125,9 @@ fn classify(input: &str) -> Result<Input> {
     }
 
     if input.contains('@') && !input.contains("://") {
-        let (local, domain) = input
-            .rsplit_once('@')
-            .ok_or_else(|| anyhow!("Invalid email address `{input}`"))?;
+        let Some((local, domain)) = input.rsplit_once('@') else {
+            bail!("Invalid email address `{input}`")
+        };
         return Ok(Input::Email {
             local: local.to_owned(),
             domain: domain.to_owned(),
@@ -188,10 +188,9 @@ fn empty_account() -> AccountConfig {
 
 fn build_url_account(url: Url, from: Option<&str>) -> Result<AccountConfig> {
     let scheme = url.scheme().to_ascii_lowercase();
-    let host = url
-        .host_str()
-        .ok_or_else(|| anyhow!("URL `{url}` is missing a host"))?
-        .to_owned();
+    let Some(host) = url.host_str().map(str::to_owned) else {
+        bail!("URL `{url}` is missing a host")
+    };
 
     match scheme.as_str() {
         // `imap[s]://` and `smtp[s]://` are just "I want IMAP+SMTP"
@@ -260,7 +259,9 @@ fn build_discovery_account(
         return Ok(account_jmap_only(jmap));
     }
 
-    let imap_endpoint = imap.ok_or_else(|| anyhow!("Discovery returned no IMAP endpoint"))?;
+    let Some(imap_endpoint) = imap else {
+        bail!("Discovery returned no IMAP endpoint")
+    };
 
     let sasl = prompt_sasl(login_default.as_deref())?;
     let imap_cfg = build_imap_config(

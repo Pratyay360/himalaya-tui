@@ -68,13 +68,13 @@ If cargo complains about *"perhaps two different versions of crate X are being u
 
 ## Contributing a theme preset
 
-Presets live as plain Rust files under [`src/themes/`](./src/themes/) and are shipped with the binary. Adding one is three steps:
+Presets live as plain Rust files under [`src/tui/theme/`](./src/tui/theme/) and are shipped with the binary. Adding one is three steps:
 
-1. Create `src/themes/<your_theme>.rs` exporting `pub const THEME: Theme = Theme { … };`. Copy [`src/themes/dracula_dark.rs`](./src/themes/dracula_dark.rs) as a starting template — every field is required, since the const is the source of truth for that preset.
-2. Register the module in [`src/themes/mod.rs`](./src/themes/mod.rs): `pub mod your_theme;`.
+1. Create `src/tui/theme/<your_theme>.rs` exporting `pub const THEME: Theme = Theme { … };`. Copy [`src/tui/theme/dracula_dark.rs`](./src/tui/theme/dracula_dark.rs) as a starting template — every field is required, since the const is the source of truth for that preset.
+2. Register the module in [`src/tui/theme/mod.rs`](./src/tui/theme/mod.rs): `pub mod your_theme;`.
 3. Add a variant + match arm to `PresetConfig` in [`src/config.rs`](./src/config.rs): the variant name (in PascalCase) becomes the kebab-case `preset = "..."` value users put in their config.
 
-Themable elements (with each one a `Style`) are listed on the [`Theme`](./src/theme.rs) struct. The built-in default uses named ANSI colors so the rendering blends with the user's terminal palette; bespoke presets typically use 24-bit RGB (`Color::Rgb(r, g, b)`) to match a fixed palette.
+Themable elements (with each one a `Style`) are listed on the [`Theme`](./src/tui/theme/theme.rs) struct. The built-in default uses named ANSI colors so the rendering blends with the user's terminal palette; bespoke presets typically use 24-bit RGB (`Color::Rgb(r, g, b)`) to match a fixed palette.
 
 ## Lint, test, audit
 

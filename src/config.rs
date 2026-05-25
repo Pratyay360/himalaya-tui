@@ -25,9 +25,9 @@
 //!
 //! [`himalaya`]: https://github.com/pimalaya/himalaya
 
-use std::{collections::HashMap, fs, path::Path, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use pimalaya_config::{
     secret::{Secret, SecretError},
     toml::{TomlConfig, shell_expanded_string},
@@ -43,7 +43,10 @@ use serde::{Deserialize, Serialize};
 #[cfg(any(feature = "imap", feature = "smtp", feature = "jmap"))]
 use url::Url;
 
-use crate::{app::keybinds::Keybinds, theme::Theme, themes};
+use crate::tui::{
+    model::Keybinds,
+    theme::{self, Theme},
+};
 
 /// `deny_unknown_fields` is intentionally omitted so the same TOML
 /// file can be shared with the `himalaya` CLI: top-level CLI-only
@@ -68,6 +71,30 @@ pub struct Config {
     pub accounts: HashMap<String, AccountConfig>,
 }
 
+impl TomlConfig for Config {
+    type Account = AccountConfig;
+
+    /// Hard-coded to `"himalaya"` (not `CARGO_PKG_NAME`) so the TUI's
+    /// default XDG path resolves to the same `himalaya/config.toml`
+    /// the CLI uses, allowing one shared configuration file.
+    fn project_name() -> &'static str {
+        "himalaya"
+    }
+
+    fn take_named_account(&mut self, name: &str) -> Option<(String, Self::Account)> {
+        self.accounts.remove_entry(name)
+    }
+
+    fn take_default_account(&mut self) -> Option<(String, Self::Account)> {
+        let name = self
+            .accounts
+            .iter()
+            .find_map(|(name, account)| account.default.then(|| name.clone()))?;
+
+        self.take_named_account(&name)
+    }
+}
+
 /// User-supplied theme configuration: pick a preset and/or override
 /// individual fields. Each override is merged on top of the preset
 /// via [`Style::patch`], so users can change just one attribute
@@ -76,7 +103,7 @@ pub struct Config {
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct ThemeConfig {
     /// Preset theme name. Each variant maps to one file under
-    /// `src/themes/`.
+    /// `src/tui/theme/`.
     pub preset: Option<PresetConfig>,
     pub header: Option<StyleConfig>,
     pub status_bar: Option<StyleConfig>,
@@ -95,8 +122,8 @@ pub struct ThemeConfig {
 }
 
 /// Names of presets shipped with the binary. Contributors add a
-/// preset by dropping a new file under `src/themes/`, registering it
-/// in `src/themes/mod.rs`, and adding a variant + match arm here.
+/// preset by dropping a new file under `src/tui/theme/`, registering
+/// it in `src/tui/theme/mod.rs`, and adding a variant + match arm here.
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum PresetConfig {
@@ -108,9 +135,9 @@ pub enum PresetConfig {
 impl PresetConfig {
     pub const fn theme(self) -> Theme {
         match self {
-            PresetConfig::Default => themes::default::THEME,
-            PresetConfig::DraculaDark => themes::dracula_dark::THEME,
-            PresetConfig::OneLight => themes::one_light::THEME,
+            PresetConfig::Default => theme::default::THEME,
+            PresetConfig::DraculaDark => theme::dracula_dark::THEME,
+            PresetConfig::OneLight => theme::one_light::THEME,
         }
     }
 }
@@ -187,50 +214,6 @@ impl From<ModifierConfig> for Modifier {
             ModifierConfig::Hidden => Modifier::HIDDEN,
             ModifierConfig::CrossedOut => Modifier::CROSSED_OUT,
         }
-    }
-}
-
-impl Config {
-    /// Serializes `self` to TOML and writes it to `path`, creating
-    /// any missing parent directories. Used by the wizard to persist
-    /// a freshly-built configuration.
-    pub fn write(&self, path: &Path) -> Result<()> {
-        let toml = toml::to_string_pretty(self).context("Serialize TOML config error")?;
-
-        if let Some(parent) = path.parent() {
-            fs::create_dir_all(parent).with_context(|| {
-                format!("Create TOML config parent `{}` error", parent.display())
-            })?;
-        }
-
-        fs::write(path, toml)
-            .with_context(|| format!("Write TOML config `{}` error", path.display()))?;
-
-        Ok(())
-    }
-}
-
-impl TomlConfig for Config {
-    type Account = AccountConfig;
-
-    /// Hard-coded to `"himalaya"` (not `CARGO_PKG_NAME`) so the TUI's
-    /// default XDG path resolves to the same `himalaya/config.toml`
-    /// the CLI uses, allowing one shared configuration file.
-    fn project_name() -> &'static str {
-        "himalaya"
-    }
-
-    fn take_named_account(&mut self, name: &str) -> Option<(String, Self::Account)> {
-        self.accounts.remove_entry(name)
-    }
-
-    fn take_default_account(&mut self) -> Option<(String, Self::Account)> {
-        let name = self
-            .accounts
-            .iter()
-            .find_map(|(name, account)| account.default.then(|| name.clone()))?;
-
-        self.take_named_account(&name)
     }
 }
 

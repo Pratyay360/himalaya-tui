@@ -22,7 +22,7 @@
 
 use ratatui::style::{Color, Modifier, Style};
 
-use crate::theme::Theme;
+use crate::tui::theme::Theme;
 
 const FG: Color = Color::Rgb(0xf8, 0xf8, 0xf2);
 const BG: Color = Color::Rgb(0x28, 0x2a, 0x36);

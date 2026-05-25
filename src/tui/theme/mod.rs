@@ -15,14 +15,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-//! Top-row header strip: shows the active account name.
+//! Color themes for the TUI: the resolved [`Theme`] struct used by
+//! every render function, plus the built-in presets shipped as `const`
+//! values. [`Theme::resolve`] layers per-field overrides from
+//! [`crate::config::ThemeConfig`] on top of the chosen preset.
 
-use ratatui::{Frame, layout::Rect, widgets::Paragraph};
+pub mod default;
+pub mod dracula_dark;
+pub mod one_light;
+mod theme;
 
-use crate::app::state::App;
-
-pub fn render_header(frame: &mut Frame, app: &App, area: Rect) {
-    let title = format!(" Himalaya TUI — {} ", app.account_name);
-    let header = Paragraph::new(title).style(app.theme.header);
-    frame.render_widget(header, area);
-}
+pub use theme::Theme;

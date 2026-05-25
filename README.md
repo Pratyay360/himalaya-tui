@@ -133,7 +133,7 @@ Color values accept named ANSI (`"blue"`, `"dark-gray"`, …), hex (`"#ff8800"`)
 
 Overrides are merged on top of the preset: any field you leave out keeps the preset value, so you can change just one attribute (e.g. only the cursor `fg`) and inherit the rest. Themable elements: `header`, `status-bar`, `border-active`, `border-inactive`, `dialog-border`, `cursor`, `mailbox-current`, `envelope-header`, `envelope-seen`, `envelope-unread`, `message-body`, `compose-text`, `compose-cursor`, `compose-selection`.
 
-Presets live as plain Rust files under [src/themes](./src/themes/) and are shipped with the binary; pull requests adding new presets are welcome (see [CONTRIBUTING.md](./CONTRIBUTING.md)).
+Presets live as plain Rust files under [src/tui/theme](./src/tui/theme/) and are shipped with the binary; pull requests adding new presets are welcome (see [CONTRIBUTING.md](./CONTRIBUTING.md)).
 
 ## Usage
 

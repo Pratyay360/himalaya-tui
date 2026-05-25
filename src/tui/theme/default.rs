@@ -21,7 +21,7 @@
 
 use ratatui::style::{Color, Modifier, Style};
 
-use crate::theme::Theme;
+use crate::tui::theme::Theme;
 
 pub const THEME: Theme = Theme {
     header: Style::new()

@@ -22,7 +22,7 @@
 
 use ratatui::style::{Color, Modifier, Style};
 
-use crate::theme::Theme;
+use crate::tui::theme::Theme;
 
 const BG: Color = Color::Rgb(0xfa, 0xfa, 0xfa);
 const LINE_BG: Color = Color::Rgb(0xe5, 0xe5, 0xe6);

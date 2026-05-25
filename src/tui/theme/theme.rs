@@ -16,21 +16,17 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //! Resolved [`Theme`] used by every render function. Each themable
-//! element is a ratatui [`Style`], so the same place tunes background,
-//! foreground, and modifiers (bold/italic/...). Themes are plain
-//! `const` values defined in Rust files under `src/themes/`; the
-//! built-in default uses named ANSI colors so the UI inherits the
-//! user's terminal palette.
-//!
-//! User configuration (`ThemeConfig` in [`crate::config`]) layers
-//! per-field overrides on top of the chosen preset via
+//! element is a ratatui [`Style`], so background, foreground and
+//! modifiers (bold/italic/...) are tuned in one place. Presets are
+//! plain `const` values in sibling files; [`Theme::resolve`] layers
+//! per-field overrides from [`crate::config::ThemeConfig`] on top via
 //! [`Style::patch`].
 
 use ratatui::style::Style;
 
 use crate::{
     config::{PresetConfig, ThemeConfig},
-    themes,
+    tui::theme,
 };
 
 /// Resolved theme used by every render function.
@@ -54,7 +50,7 @@ pub struct Theme {
 
 impl Default for Theme {
     fn default() -> Self {
-        themes::default::THEME
+        theme::default::THEME
     }
 }
 
