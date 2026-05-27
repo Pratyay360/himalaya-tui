@@ -36,8 +36,8 @@ use mail_parser::{Addr, Address, HeaderName, HeaderValue, MessageParser};
 use mml::{
     compiler::message::MmlCompilerBuilder,
     template::{
-        compose::builder::TemplateBuilderCompose, forward::builder::TemplateBuilderForward,
-        reply::builder::TemplateBuilderReply, types::TemplateCursor,
+        compose::TemplateBuilderCompose, forward::TemplateBuilderForward,
+        reply::TemplateBuilderReply, types::TemplateCursor,
     },
 };
 use ratatui::crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
