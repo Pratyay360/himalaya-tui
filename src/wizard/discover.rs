@@ -369,8 +369,6 @@ fn prompt_sasl(email: Option<&str>) -> Result<SaslConfig> {
         }),
         "OAUTHBEARER" => SaslConfig::Oauthbearer(SaslOauthbearerConfig {
             username: prompt::text("Username:", email)?,
-            host: prompt::text::<&str>("Host:", None)?,
-            port: prompt::u16("Port:", None)?,
             token: prompt_raw_secret("Access token")?,
         }),
         "SCRAM-SHA-256" => SaslConfig::ScramSha256(SaslScramSha256Config {

@@ -257,8 +257,15 @@ impl ImapConfig {
     pub fn into_client(self) -> Result<io_email::imap::client::ImapClientStd> {
         let mut tls: Tls = self.tls.try_into()?;
         tls.rustls.alpn = vec!["imap".into()];
-        let sasl: Option<Sasl> = self.sasl.map(Sasl::try_from).transpose()?;
         let server = parse_imap_server(&self.server)?;
+        let sasl: Option<Sasl> = self
+            .sasl
+            .and_then(|cfg| {
+                let host = server.host_str()?;
+                let port = server.port_or_known_default()?;
+                Some(cfg.try_into_sasl(host, port))
+            })
+            .transpose()?;
         Ok(io_email::imap::client::ImapClientStd::connect(
             &server,
             &tls,
@@ -303,9 +310,16 @@ impl SmtpConfig {
 
         let mut tls: Tls = self.tls.try_into()?;
         tls.rustls.alpn = vec!["smtp".into()];
-        let sasl: Option<Sasl> = self.sasl.map(Sasl::try_from).transpose()?;
         let domain: EhloDomain<'static> = Ipv4Addr::new(127, 0, 0, 1).into();
         let server = parse_smtp_server(&self.server)?;
+        let sasl: Option<Sasl> = self
+            .sasl
+            .and_then(|cfg| {
+                let host = server.host_str()?;
+                let port = server.port_or_known_default()?;
+                Some(cfg.try_into_sasl(host, port))
+            })
+            .transpose()?;
         Ok(io_email::smtp::client::SmtpClientStd::connect(
             &server,
             &tls,
@@ -513,7 +527,9 @@ pub struct SaslLoginConfig {
 pub struct SaslPlainConfig {
     pub authzid: Option<String>,
     #[serde(deserialize_with = "shell_expanded_string")]
+    #[serde(alias = "username")]
     pub authcid: String,
+    #[serde(alias = "password")]
     pub passwd: Secret,
 }
 
@@ -522,8 +538,6 @@ pub struct SaslPlainConfig {
 pub struct SaslOauthbearerConfig {
     #[serde(deserialize_with = "shell_expanded_string")]
     pub username: String,
-    pub host: String,
-    pub port: u16,
     pub token: Secret,
 }
 
@@ -543,11 +557,13 @@ pub struct SaslScramSha256Config {
     pub password: Secret,
 }
 
-impl TryFrom<SaslConfig> for Sasl {
-    type Error = anyhow::Error;
-
-    fn try_from(config: SaslConfig) -> Result<Self> {
-        Ok(match config {
+impl SaslConfig {
+    /// Resolves the SASL config into a runtime [`Sasl`]. `host` and
+    /// `port` come from the live server URL; they are only used by
+    /// OAUTHBEARER (echoed in the GS2 header) and ignored by every
+    /// other mechanism.
+    pub fn try_into_sasl(self, host: impl ToString, port: u16) -> Result<Sasl> {
+        Ok(match self {
             SaslConfig::Anonymous(c) => Sasl::Anonymous(SaslAnonymous { message: c.message }),
             SaslConfig::Login(c) => Sasl::Login(SaslLogin {
                 username: c.username,
@@ -560,8 +576,8 @@ impl TryFrom<SaslConfig> for Sasl {
             }),
             SaslConfig::Oauthbearer(c) => Sasl::Oauthbearer(SaslOauthbearer {
                 username: c.username,
-                host: c.host,
-                port: c.port,
+                host: host.to_string(),
+                port,
                 token: c.token.get()?,
             }),
             SaslConfig::Xoauth2(c) => Sasl::Xoauth2(SaslXoauth2 {
