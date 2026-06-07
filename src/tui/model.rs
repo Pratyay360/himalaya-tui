@@ -25,9 +25,9 @@ use clap::ValueEnum;
 use edtui::{EditorEventHandler, EditorState};
 use io_email::{
     client::EmailClientStd,
-    envelope::Envelope,
-    flag::{Flag, IanaFlag},
-    mailbox::Mailbox,
+    envelope::types::Envelope,
+    flag::types::{Flag, IanaFlag},
+    mailbox::types::Mailbox,
 };
 use ratatui::crossterm::event::KeyEvent;
 use serde::{Deserialize, Serialize};

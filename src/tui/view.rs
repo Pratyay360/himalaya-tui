@@ -22,8 +22,8 @@
 
 use edtui::{EditorTheme, EditorView};
 use io_email::{
-    envelope::Envelope,
-    flag::{Flag, IanaFlag},
+    envelope::types::Envelope,
+    flag::types::{Flag, IanaFlag},
 };
 use ratatui::{
     Frame,

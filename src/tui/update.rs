@@ -29,8 +29,8 @@ use edtui::{
     actions::{Execute, OpenSystemEditor},
 };
 use io_email::{
-    flag::{Flag, FlagOp, IanaFlag},
-    mailbox::Mailbox,
+    flag::types::{Flag, FlagOp, IanaFlag},
+    mailbox::types::Mailbox,
 };
 use mail_parser::MessageParser;
 use mml::{
