@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+
+      - uses: jdx/mise-action@main
+        with:
+          install: true
+          cache: true
+
+      - name: Cache cargo registry
+        uses: actions/cache@main
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-${{ hashFiles('Cargo.lock') }}
+
+      - name: Run CI checks
+        run: mise run check
+
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    needs: [check]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            binary: himalaya-tui
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            binary: himalaya-tui
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            binary: himalaya-tui.exe
+
+    steps:
+      - uses: actions/checkout@main
+
+      - uses: jdx/mise-action@main
+        with:
+          install: true
+          cache: true
+
+      - name: Build release binary
+        run: mise run release
+
+      - name: Upload binary
+        uses: actions/upload-artifact@main
+        with:
+          name: himalaya-tui-${{ matrix.target }}
+          path: target/release/${{ matrix.binary }}
+          if-no-files-found: error
+          tag: v${{ github.run_number }}
+          release: v${{ github.run_number }}
